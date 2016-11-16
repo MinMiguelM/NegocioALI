@@ -12,7 +12,17 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.Resource;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
+import javax.jms.JMSConnectionFactory;
+import javax.jms.JMSContext;
+import javax.jms.JMSException;
+import javax.jms.MessageProducer;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -22,6 +32,13 @@ import javax.persistence.PersistenceContext;
  */
 @Stateless
 public class TransaccionFacade extends AbstractFacade<Transaccion> implements logica.TransaccionFacadeRemote {
+
+    @Resource(mappedName = "jms/topicContabilidad")
+    private Topic topicContabilidad;
+
+    @Inject
+    @JMSConnectionFactory("jms/topicContabilidadFactory")
+    private JMSContext context;
 
     @PersistenceContext(unitName = "NegocioALIPU")
     private EntityManager em;
@@ -46,7 +63,12 @@ public class TransaccionFacade extends AbstractFacade<Transaccion> implements lo
         tx.setFecha(date);
         tx.setPlatoList(platos);
         tx.setValor(BigInteger.valueOf(total));
-        //llamar a mis pagos
+        
+        sendJMSMessageToTopicContabilidad(tx.toString());
         return 0;
+    }
+
+    private void sendJMSMessageToTopicContabilidad(String messageData) {
+        context.createProducer().send(topicContabilidad, messageData);
     }
 }
