@@ -64,7 +64,7 @@ public class TransaccionFacade extends AbstractFacade<Transaccion> implements lo
         tx.setPlatoList(platos);
         tx.setValor(BigInteger.valueOf(total));
         
-        sendJMSMessageToTopicContabilidad(tx.toString());
+        //sendJMSMessageToTopicContabilidad(tx.toString());
         return 0;
     }
 
