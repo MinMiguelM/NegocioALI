@@ -35,5 +35,21 @@ public class ConexionBean implements ConexionBeanRemote {
     public int pago(Usuario user, List<Plato> platos){
         return transaccionFacade.pago(user, platos);
     }
+    
+    @Override
+    public boolean eliminarPlato(Plato p){
+        platoFacade.remove(p);
+        return true;
+    }
+    
+    @Override
+    public Plato getPlatoByName (String busq){
+       return platoFacade.getPlatoByName(busq);
+    }
+    
+    @Override
+    public void editarPlato(Plato p){
+        platoFacade.edit(p);
+    }
 
 }

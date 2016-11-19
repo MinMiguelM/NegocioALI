@@ -5,13 +5,19 @@
  */
 package logica;
 
+import com.sun.xml.wss.util.DateUtils;
 import entities.Plato;
 import entities.Transaccion;
 import entities.Usuario;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,11 +31,13 @@ import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.MessageProducer;
+import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 /**
  *
@@ -38,11 +46,15 @@ import javax.persistence.PersistenceContext;
 @Stateless
 public class TransaccionFacade extends AbstractFacade<Transaccion> implements logica.TransaccionFacadeRemote, Serializable{
 
+    /*@Resource(mappedName = "jms/queueMail")
+    private Queue queueMail;
+
+    @Resource(mappedName = "jms/queueMailFactory")
+    private ConnectionFactory context;*/
+
     @Resource(mappedName = "jms/topicContabilidad")
     private Topic topicContabilidad;
 
-    //@Inject
-    //@JMSConnectionFactory("jms/topicContabilidadFactory")
     @Resource(mappedName = "jms/topicContabilidadFactory")
     private ConnectionFactory topicFactory;
 
@@ -67,12 +79,16 @@ public class TransaccionFacade extends AbstractFacade<Transaccion> implements lo
                 total += plato.getPrecio().intValue();
             }
             tx.setCedulaUsuario(user);
-            tx.setFecha(date);
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(date);
+            tx.setFecha(cal.get(Calendar.DAY_OF_MONTH)+"/"+(cal.get(Calendar.MONTH)+1)+"/"+
+                    cal.get(Calendar.YEAR));
             tx.setPlatoList(platos);
             tx.setValor(BigInteger.valueOf(total));
             //llamar a mis pagos
-            //guardar en ali
             tx.setNumTransaccion(BigDecimal.valueOf(234));
+            getEntityManager().persist(tx);
+            //sendJMSMessageToQueueMail(tx,user);
             sendJMSMessageToTopicContabilidad(tx);
             return 234;
         } catch (Exception ex) {
@@ -107,5 +123,36 @@ public class TransaccionFacade extends AbstractFacade<Transaccion> implements lo
         }
     }
     
+    public List<Transaccion> getTransacciones(String date){
+        Query q = em.createNamedQuery("Transaccion.findByFecha");
+        q.setParameter("fecha", date);
+        List<Transaccion> l = q.getResultList();
+        return l;
+    }
+
+    /*private void sendJMSMessageToQueueMail(Transaccion tx,Usuario user) throws JMSException {
+        Connection connection = null;
+        Session session = null;
+        try{
+            connection = context.createConnection();
+            session = connection.createSession(false,Session.AUTO_ACKNOWLEDGE);
+            MessageProducer messageProducer = session.createProducer(queueMail);
+            MapMessage mm = session.createMapMessage();
+            mm.setInt("NumTransaccion",tx.getNumTransaccion().intValue());
+            mm.setObject("Usuario", user);
+            mm.setInt("Valor", tx.getValor().intValue());
+            messageProducer.send(mm);
+        }finally{
+            if(session != null){
+                try {
+                    session.close();
+                } catch (JMSException ex) {
+                    Logger.getLogger(TransaccionFacade.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            if(connection != null)
+                connection.close();
+        }
+    }*/
     
 }

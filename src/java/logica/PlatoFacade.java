@@ -9,6 +9,7 @@ import entities.Plato;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
@@ -37,4 +38,13 @@ public class PlatoFacade extends AbstractFacade<Plato> implements PlatoFacadeRem
         return q.getResultList();
     }
     
+    public Plato getPlatoByName(String busqueda){
+        try{
+            Query q = em.createNamedQuery("Plato.findByNombre");
+            q.setParameter("nombre",busqueda);
+            return (Plato)q.getSingleResult();
+        }catch(NoResultException e){
+            return null;
+        }
+    }
 }
