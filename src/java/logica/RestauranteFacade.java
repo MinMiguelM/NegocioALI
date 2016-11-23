@@ -38,4 +38,12 @@ public class RestauranteFacade extends AbstractFacade<Restaurante> implements lo
         
     }
     
+    public Restaurante getByName(String busq){
+        Query q = em.createNamedQuery("Restaurante.findByNombre");
+        q.setParameter("nombre", busq);
+        Restaurante r = (Restaurante)q.getSingleResult();
+        r.getPlatoList().size();
+        return r;
+    }
+    
 }

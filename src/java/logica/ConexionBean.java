@@ -69,5 +69,21 @@ public class ConexionBean implements ConexionBeanRemote {
     public List<Restaurante> getRestaurantes(String busqueda){
         return restauranteFacade.getRestaurantes(busqueda);
     }
+    
+    @Override
+    public void agregarRestaurante(Restaurante r){
+        restauranteFacade.create(r);
+    }
+    
+    @Override
+    public boolean eliminarRest(Restaurante r){
+        restauranteFacade.remove(r);
+        return true;
+    }
+    
+    @Override
+    public Restaurante getRestauranteByName(String busq){
+        return restauranteFacade.getByName(busq);
+    }
 
 }

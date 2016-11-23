@@ -73,6 +73,12 @@ public class TransaccionFacade extends AbstractFacade<Transaccion> implements lo
     public TransaccionFacade() {
         super(Transaccion.class);
     }
+    
+    public List<Transaccion> getTransaccionByUsuario(String cedula){
+        Query q = getEntityManager().createNamedQuery("Transaccion.findByUsuario");
+        q.setParameter("cedula", cedula);
+        return q.getResultList();
+    }
  
     public int pago(Usuario user, List<Plato> platos){
         try {
@@ -93,10 +99,9 @@ public class TransaccionFacade extends AbstractFacade<Transaccion> implements lo
             tx.setNumTransaccion(BigDecimal.valueOf(4313));
             getEntityManager().persist(tx);
             //sendJMSMessageToQueueMail(tx,user);
-            for (Plato plato : platos) {
+            /*for (Plato plato : platos) {
                 plato.getTransaccionList().add(tx);
-                platoFacade.edit(plato);
-            }
+            }*/
             sendJMSMessageToTopicContabilidad(tx);
             return 234;
         } catch (Exception ex) {

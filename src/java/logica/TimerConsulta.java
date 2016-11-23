@@ -6,6 +6,7 @@
 package logica;
 
 import java.util.Date;
+import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Singleton;
 
@@ -15,11 +16,15 @@ import javax.ejb.Singleton;
  */
 @Singleton
 public class TimerConsulta implements TimerConsultaLocal {
-
-    @Schedule(minute = "*/1",hour = "*")
+    
+    @EJB
+    private ConsultaPedidoUsuarioBean consultaPedidoUsuarioBean;
+    
+    @Schedule(minute = "*/5",hour = "*")
     @Override
     public void myTimer() {
         System.out.println("Timer event: " + new Date());
+        consultaPedidoUsuarioBean.getTransaccionByUsuario("123");
     }
 
     // Add business logic below. (Right-click in editor and choose
