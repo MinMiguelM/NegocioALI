@@ -6,6 +6,7 @@
 package logica;
 
 import entities.Plato;
+import entities.Restaurante;
 import entities.Usuario;
 import java.util.List;
 import javax.ejb.EJB;
@@ -22,6 +23,8 @@ public class ConexionBean implements ConexionBeanRemote {
     private PlatoFacadeRemote platoFacade;
     @EJB
     private TransaccionFacadeRemote transaccionFacade;
+    @EJB
+    private RestauranteFacadeRemote restauranteFacade;
 
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
@@ -50,6 +53,21 @@ public class ConexionBean implements ConexionBeanRemote {
     @Override
     public void editarPlato(Plato p){
         platoFacade.edit(p);
+    }
+    
+    @Override
+    public void agregarPlato(Plato p){
+        platoFacade.create(p);
+    }
+    
+    @Override
+    public void editarRestaurante(Restaurante r){
+        restauranteFacade.edit(r);
+    }
+    
+    @Override
+    public List<Restaurante> getRestaurantes(String busqueda){
+        return restauranteFacade.getRestaurantes(busqueda);
     }
 
 }

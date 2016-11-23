@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.jms.Connection;
@@ -46,11 +47,11 @@ import javax.persistence.Query;
 @Stateless
 public class TransaccionFacade extends AbstractFacade<Transaccion> implements logica.TransaccionFacadeRemote, Serializable{
 
-    /*@Resource(mappedName = "jms/queueMail")
+    @Resource(mappedName = "queueMail")
     private Queue queueMail;
 
     @Resource(mappedName = "jms/queueMailFactory")
-    private ConnectionFactory context;*/
+    private ConnectionFactory context;
 
     @Resource(mappedName = "jms/topicContabilidad")
     private Topic topicContabilidad;
@@ -60,6 +61,9 @@ public class TransaccionFacade extends AbstractFacade<Transaccion> implements lo
 
     @PersistenceContext(unitName = "NegocioALIPU")
     private EntityManager em;
+    
+    @EJB
+    private PlatoFacadeRemote platoFacade;
 
     @Override
     protected EntityManager getEntityManager() {
@@ -86,9 +90,13 @@ public class TransaccionFacade extends AbstractFacade<Transaccion> implements lo
             tx.setPlatoList(platos);
             tx.setValor(BigInteger.valueOf(total));
             //llamar a mis pagos
-            tx.setNumTransaccion(BigDecimal.valueOf(234));
+            tx.setNumTransaccion(BigDecimal.valueOf(4313));
             getEntityManager().persist(tx);
             //sendJMSMessageToQueueMail(tx,user);
+            for (Plato plato : platos) {
+                plato.getTransaccionList().add(tx);
+                platoFacade.edit(plato);
+            }
             sendJMSMessageToTopicContabilidad(tx);
             return 234;
         } catch (Exception ex) {
@@ -106,8 +114,8 @@ public class TransaccionFacade extends AbstractFacade<Transaccion> implements lo
             MessageProducer messageProducer = session.createProducer(topicContabilidad);
             MapMessage mm = session.createMapMessage();
             mm.setString("Cedula", messageData.getCedulaUsuario().getCedula());
-            mm.setInt("NumTransaccion", messageData.getNumTransaccion().intValue());
-            mm.setString("Fecha",messageData.getFecha().toString());
+            mm.setLong("NumTransaccion", messageData.getNumTransaccion().intValue());
+            mm.setString("Fecha",messageData.getFecha());
             mm.setDouble("Valor", messageData.getValor().doubleValue());
             messageProducer.send(mm);
         }finally{
@@ -130,7 +138,7 @@ public class TransaccionFacade extends AbstractFacade<Transaccion> implements lo
         return l;
     }
 
-    /*private void sendJMSMessageToQueueMail(Transaccion tx,Usuario user) throws JMSException {
+    private void sendJMSMessageToQueueMail(Transaccion tx,Usuario user) throws JMSException {
         Connection connection = null;
         Session session = null;
         try{
@@ -139,7 +147,7 @@ public class TransaccionFacade extends AbstractFacade<Transaccion> implements lo
             MessageProducer messageProducer = session.createProducer(queueMail);
             MapMessage mm = session.createMapMessage();
             mm.setInt("NumTransaccion",tx.getNumTransaccion().intValue());
-            mm.setObject("Usuario", user);
+            mm.setString("Usuario", user.getCorreo());
             mm.setInt("Valor", tx.getValor().intValue());
             messageProducer.send(mm);
         }finally{
@@ -153,6 +161,6 @@ public class TransaccionFacade extends AbstractFacade<Transaccion> implements lo
             if(connection != null)
                 connection.close();
         }
-    }*/
+    }
     
 }

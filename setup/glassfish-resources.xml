@@ -8,9 +8,9 @@
     <description/>
     <property name="Name" value="topicContabilidad"/>
   </admin-object-resource>
-  <admin-object-resource enabled="true" jndi-name="jms/queueMail" object-type="user" res-adapter="jmsra" res-type="javax.jms.Queue">
+  <admin-object-resource enabled="true" jndi-name="queueMail" object-type="user" res-adapter="jmsra" res-type="javax.jms.Queue">
     <description/>
-    <property name="Name" value="jms/queueMail"/>
+    <property name="Name" value="queueMail"/>
   </admin-object-resource>
   <connector-resource enabled="true" jndi-name="jms/topicContabilidadFactory" object-type="user" pool-name="jms/topicContabilidadFactory-Connection-Pool">
     <description/>
