@@ -6,6 +6,7 @@
 package logica;
 
 import entities.Plato;
+import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -33,16 +34,26 @@ public class PlatoFacade extends AbstractFacade<Plato> implements PlatoFacadeRem
     }
     
     public List<Plato> getPlatos(String busqueda){
-        Query q = em.createNamedQuery("Plato.findSimilar");
-        q.setParameter("nombre","%"+busqueda+"%");
-        return q.getResultList();
+        try{
+            Query q = em.createNamedQuery("Plato.findSimilar");
+            q.setParameter("nombre","%"+busqueda+"%");
+            List<Plato> l = q.getResultList();
+            for (Plato plato : l) {
+                plato.getTransaccionList().size();
+            }
+            return l;
+        }catch(NoResultException e){
+            return new ArrayList<>();
+        }
     }
     
     public Plato getPlatoByName(String busqueda){
         try{
             Query q = em.createNamedQuery("Plato.findByNombre");
             q.setParameter("nombre",busqueda);
-            return (Plato)q.getSingleResult();
+            Plato p =(Plato)q.getSingleResult();
+            p.getTransaccionList().size();
+            return p;
         }catch(NoResultException e){
             return null;
         }

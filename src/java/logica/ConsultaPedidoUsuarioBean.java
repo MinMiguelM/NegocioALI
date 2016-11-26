@@ -30,12 +30,15 @@ public class ConsultaPedidoUsuarioBean {
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
     
-    public void getTransaccionByUsuario(String cedula){
+    public void getTransaccionByUsuario(int numDocumento,String tipoDocumento){
         try {
-            Future<List<Transaccion>> l = pedidosUsuario.getTransaccionByUsuario(cedula);
-            for (Transaccion transaccion : l.get()) {
-                System.out.println(transaccion.getCedulaUsuario() + " " +transaccion.getNumTransaccion());
-            }
+            Future<List<Transaccion>> l = pedidosUsuario.getTransaccionByUsuario(numDocumento,tipoDocumento);
+            if(l.get().isEmpty())
+                System.out.println("Lista vacia");
+            else
+                for (Transaccion transaccion : l.get()) {
+                    System.out.println(transaccion.getUsuario().getUsuarioPK().getNumDocumento()+ " " +transaccion.getNumTransaccion());
+                }
         } catch (InterruptedException ex) {
             Logger.getLogger(ConsultaPedidoUsuarioBean.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ExecutionException ex) {

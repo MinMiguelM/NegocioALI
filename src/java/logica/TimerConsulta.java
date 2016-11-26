@@ -24,7 +24,7 @@ public class TimerConsulta implements TimerConsultaLocal {
     @Override
     public void myTimer() {
         System.out.println("Timer event: " + new Date());
-        consultaPedidoUsuarioBean.getTransaccionByUsuario("123");
+        consultaPedidoUsuarioBean.getTransaccionByUsuario(1010,"CC");
     }
 
     // Add business logic below. (Right-click in editor and choose

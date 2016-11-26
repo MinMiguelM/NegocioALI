@@ -2,6 +2,16 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/C:/Users/SALABD/Desktop/NegocioALI/src/java/logica/TimerConsulta.java</file>
+            <file>file:/C:/Users/SALABD/Desktop/NegocioALI/setup/glassfish-resources.xml</file>
+            <file>file:/C:/Users/SALABD/Desktop/NegocioALI/src/java/logica/PlatoFacade.java</file>
+            <file>file:/C:/Users/SALABD/Desktop/NegocioALI/src/java/jms/MDBEnvioCorreo.java</file>
+            <file>file:/C:/Users/SALABD/Desktop/NegocioALI/src/java/logica/ProxyMisPagos.java</file>
+            <file>file:/C:/Users/SALABD/Desktop/NegocioALI/src/java/logica/ConsultaPedidoUsuarioBean.java</file>
+            <file>file:/C:/Users/SALABD/Desktop/NegocioALI/src/java/logica/ConexionBean.java</file>
+            <file>file:/C:/Users/SALABD/Desktop/NegocioALI/src/java/logica/TransaccionFacade.java</file>
+            <file>file:/C:/Users/SALABD/Desktop/NegocioALI/src/java/logica/EnvioCorreoBean.java</file>
+        </group>
     </open-files>
 </project-private>

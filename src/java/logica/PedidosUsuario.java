@@ -30,7 +30,7 @@ public class PedidosUsuario {
     // "Insert Code > Add Business Method")
     
     @Asynchronous
-    public Future<List<Transaccion>> getTransaccionByUsuario(String cedula){
-        return new AsyncResult<List<Transaccion>>(transaccionFacade.getTransaccionByUsuario(cedula));
+    public Future<List<Transaccion>> getTransaccionByUsuario(int numDocumento, String tipoDocumento){
+        return new AsyncResult<List<Transaccion>>(transaccionFacade.getTransaccionByUsuario(numDocumento,tipoDocumento));
     }
 }

@@ -6,9 +6,11 @@
 package logica;
 
 import entities.Restaurante;
+import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
@@ -32,18 +34,26 @@ public class RestauranteFacade extends AbstractFacade<Restaurante> implements lo
     }
     
     public List<Restaurante> getRestaurantes(String busqueda){
-        Query q = em.createNamedQuery("Restaurante.findSimilar");
-        q.setParameter("nombre","%"+busqueda+"%");
-        return q.getResultList();
+        try{
+            Query q = em.createNamedQuery("Restaurante.findSimilar");
+            q.setParameter("nombre","%"+busqueda+"%");
+            return q.getResultList();
+        }catch(NoResultException e){
+            return new ArrayList<>();
+        }
         
     }
     
     public Restaurante getByName(String busq){
-        Query q = em.createNamedQuery("Restaurante.findByNombre");
-        q.setParameter("nombre", busq);
-        Restaurante r = (Restaurante)q.getSingleResult();
-        r.getPlatoList().size();
-        return r;
+        try{
+            Query q = em.createNamedQuery("Restaurante.findByNombre");
+            q.setParameter("nombre", busq);
+            Restaurante r = (Restaurante)q.getSingleResult();
+            r.getPlatoList().size();
+            return r;
+        }catch(NoResultException e){
+            return null;
+        }
     }
     
 }

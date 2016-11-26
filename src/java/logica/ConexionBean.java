@@ -8,9 +8,12 @@ package logica;
 import entities.Plato;
 import entities.Restaurante;
 import entities.Usuario;
+import entities.UsuarioPK;
+import java.math.BigInteger;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.persistence.NoResultException;
 
 /**
  *
@@ -25,6 +28,8 @@ public class ConexionBean implements ConexionBeanRemote {
     private TransaccionFacadeRemote transaccionFacade;
     @EJB
     private RestauranteFacadeRemote restauranteFacade;
+    @EJB
+    private UsuarioFacadeRemote usuarioFacade;
 
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
@@ -56,7 +61,8 @@ public class ConexionBean implements ConexionBeanRemote {
     }
     
     @Override
-    public void agregarPlato(Plato p){
+    public void agregarPlato(Plato p, Restaurante r){
+        System.out.println(r.getNombre());
         platoFacade.create(p);
     }
     
@@ -84,6 +90,16 @@ public class ConexionBean implements ConexionBeanRemote {
     @Override
     public Restaurante getRestauranteByName(String busq){
         return restauranteFacade.getByName(busq);
+    }
+    
+    @Override
+    public Usuario findUsuario(String tipo, int numero){
+        try{
+            UsuarioPK pk = new UsuarioPK(BigInteger.valueOf(numero), tipo);
+            return usuarioFacade.find(pk);
+        }catch(NoResultException e){
+            return null;
+        }
     }
 
 }

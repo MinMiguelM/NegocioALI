@@ -9,12 +9,14 @@ import com.sun.xml.wss.util.DateUtils;
 import entities.Plato;
 import entities.Transaccion;
 import entities.Usuario;
+import integracion.DTOTransaccion;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -37,6 +39,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
@@ -64,6 +67,9 @@ public class TransaccionFacade extends AbstractFacade<Transaccion> implements lo
     
     @EJB
     private PlatoFacadeRemote platoFacade;
+    
+    @EJB
+    private ProxyMisPagos proxy;
 
     @Override
     protected EntityManager getEntityManager() {
@@ -74,36 +80,49 @@ public class TransaccionFacade extends AbstractFacade<Transaccion> implements lo
         super(Transaccion.class);
     }
     
-    public List<Transaccion> getTransaccionByUsuario(String cedula){
-        Query q = getEntityManager().createNamedQuery("Transaccion.findByUsuario");
-        q.setParameter("cedula", cedula);
-        return q.getResultList();
+    public List<Transaccion> getTransaccionByUsuario(int numDocumento, String tipoDocumento){
+        try{
+            Query q = getEntityManager().createNamedQuery("Transaccion.findByUsuario");
+            q.setParameter("numDocumento", numDocumento);
+            q.setParameter("tipoDocumento", tipoDocumento);
+            return q.getResultList();
+        }catch(NoResultException ex){
+            return new ArrayList<>();
+        }
     }
  
     public int pago(Usuario user, List<Plato> platos){
         try {
             int total = 0;
+            System.out.println(platos.size());
             Transaccion tx = new Transaccion();
             Date date = new Date();
+            String desc = "";
             for (Plato plato : platos) {
                 total += plato.getPrecio().intValue();
+                desc += plato.getNombre()+" ";
             }
-            tx.setCedulaUsuario(user);
+            tx.setUsuario(user);
             Calendar cal = Calendar.getInstance();
             cal.setTime(date);
             tx.setFecha(cal.get(Calendar.DAY_OF_MONTH)+"/"+(cal.get(Calendar.MONTH)+1)+"/"+
                     cal.get(Calendar.YEAR));
             tx.setPlatoList(platos);
             tx.setValor(BigInteger.valueOf(total));
-            //llamar a mis pagos
-            tx.setNumTransaccion(BigDecimal.valueOf(4313));
+            System.out.println(total + " " + desc);
+            DTOTransaccion tr = proxy.pago(user.getUsuarioPK().getTipoDocumento(), user.getUsuarioPK().getNumDocumento().toString(), total, desc, "Pago");
+            if(tr.getTransaccionId() == -1){
+                return -1;
+            }else
+                tx.setNumTransaccion(BigDecimal.valueOf(tr.getTransaccionId()));
             getEntityManager().persist(tx);
-            //sendJMSMessageToQueueMail(tx,user);
-            /*for (Plato plato : platos) {
+            sendJMSMessageToQueueMail(tx,user);
+            for (Plato plato : platos) {
                 plato.getTransaccionList().add(tx);
-            }*/
+                platoFacade.edit(plato);
+            }
             sendJMSMessageToTopicContabilidad(tx);
-            return 234;
+            return tr.getTransaccionId();
         } catch (Exception ex) {
             Logger.getLogger(TransaccionFacade.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -118,8 +137,9 @@ public class TransaccionFacade extends AbstractFacade<Transaccion> implements lo
             session = connection.createSession(false,Session.AUTO_ACKNOWLEDGE);
             MessageProducer messageProducer = session.createProducer(topicContabilidad);
             MapMessage mm = session.createMapMessage();
-            mm.setString("Cedula", messageData.getCedulaUsuario().getCedula());
-            mm.setLong("NumTransaccion", messageData.getNumTransaccion().intValue());
+            mm.setString("TipoDocumento", messageData.getUsuario().getUsuarioPK().getTipoDocumento());
+            mm.setInt("NumDocumento", messageData.getUsuario().getUsuarioPK().getNumDocumento().intValue());
+            mm.setInt("NumTransaccion", messageData.getNumTransaccion().intValue());
             mm.setString("Fecha",messageData.getFecha());
             mm.setDouble("Valor", messageData.getValor().doubleValue());
             messageProducer.send(mm);
@@ -137,10 +157,14 @@ public class TransaccionFacade extends AbstractFacade<Transaccion> implements lo
     }
     
     public List<Transaccion> getTransacciones(String date){
-        Query q = em.createNamedQuery("Transaccion.findByFecha");
-        q.setParameter("fecha", date);
-        List<Transaccion> l = q.getResultList();
-        return l;
+        try{
+            Query q = em.createNamedQuery("Transaccion.findByFecha");
+            q.setParameter("fecha", date);
+            List<Transaccion> l = q.getResultList();
+            return l;
+        }catch(NoResultException e){
+            return new ArrayList<>();
+        }
     }
 
     private void sendJMSMessageToQueueMail(Transaccion tx,Usuario user) throws JMSException {
